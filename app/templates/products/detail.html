@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<h1>{{ product.name }}</h1>
+
+<div class="card">
+    <h2>Product Details</h2>
+    <p><strong>SKU:</strong> {{ product.sku }}</p>
+    <p><strong>Company:</strong> {{ product.company_name }}</p>
+    <p><strong>Unit Price:</strong> ₦{{ "%.2f"|format(product.unit_price) }}</p>
+    <p><strong>Current Stock:</strong> 
+        {% if product.quantity_in_stock <= product.reorder_threshold %}
+        <span class="low-stock">{{ product.quantity_in_stock }} (Low Stock)</span>
+        {% else %}
+        {{ product.quantity_in_stock }}
+        {% endif %}
+    </p>
+    <p><strong>Reorder Threshold:</strong> {{ product.reorder_threshold }}</p>
+    <p><strong>Description:</strong> {{ product.description or 'No description' }}</p>
+    <p><strong>Created:</strong> {{ product.created_at }}</p>
+    <p><strong>Last Updated:</strong> {{ product.updated_at }}</p>
+    
+    <div class="mt-2">
+        <a href="/products/{{ product.id }}/edit" class="btn">Edit Product</a>
+        <form method="POST" action="/products/{{ product.id }}/delete" style="display: inline;">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this product?')">Delete Product</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Adjust Stock</h2>
+    <form method="POST" action="/products/{{ product.id }}/adjust-stock">
+        <label for="change_type">Adjustment Type *</label>
+        <select id="change_type" name="change_type" required>
+            <option value="restock">Restock (Add Stock)</option>
+            <option value="adjustment">Manual Adjustment</option>
+        </select>
+        
+        <label for="quantity_change">Quantity *</label>
+        <input type="number" id="quantity_change" name="quantity_change" min="1" value="1" required>
+        <small>For manual adjustment, use negative values to decrease stock.</small>
+        
+        <div class="mt-2">
+            <button type="submit">Apply Adjustment</button>
+        </div>
+    </form>
+</div>
+
+{% if transactions %}
+<div class="card">
+    <h2>Recent Stock Transactions</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Change</th>
+                <th>Resulting Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in transactions %}
+            <tr>
+                <td>{{ tx.created_at[:10] }}</td>
+                <td>{{ tx.change_type }}</td>
+                <td>{{ tx.quantity_change }}</td>
+                <td>{{ tx.resulting_quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

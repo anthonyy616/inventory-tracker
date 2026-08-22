@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<h1>Inventory Transactions</h1>
+
+<div class="card">
+    <form method="GET" action="/transactions">
+        <div class="flex">
+            <div style="flex: 1;">
+                <label for="change_type">Transaction Type</label>
+                <select id="change_type" name="change_type">
+                    <option value="">All Types</option>
+                    <option value="sale" {{ "selected" if change_type == 'sale' }}>Sale</option>
+                    <option value="restock" {{ "selected" if change_type == 'restock' }}>Restock</option>
+                    <option value="adjustment" {{ "selected" if change_type == 'adjustment' }}>Adjustment</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <label for="start_date">Start Date</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date or '' }}">
+            </div>
+            <div style="flex: 1;">
+                <label for="end_date">End Date</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date or '' }}">
+            </div>
+            <div style="flex: 0; display: flex; align-items: end;">
+                <button type="submit">Filter</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if transactions %}
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Type</th>
+            <th>Change</th>
+            <th>Resulting Stock</th>
+            <th>Order #</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tx in transactions %}
+        <tr>
+            <td>{{ tx.created_at[:10] }}</td>
+            <td>{{ tx.product_name }}</td>
+            <td>{{ tx.product_sku }}</td>
+            <td>
+                {% if tx.change_type == 'sale' %}
+                <span style="color: #e74c3c;">Sale</span>
+                {% elif tx.change_type == 'restock' %}
+                <span style="color: #27ae60;">Restock</span>
+                {% else %}
+                <span style="color: #f39c12;">Adjustment</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if tx.quantity_change < 0 %}
+                <span style="color: #e74c3c;">{{ tx.quantity_change }}</span>
+                {% else %}
+                <span style="color: #27ae60;">+{{ tx.quantity_change }}</span>
+                {% endif %}
+            </td>
+            <td>{{ tx.resulting_quantity }}</td>
+            <td>
+                {% if tx.order_number != '-' %}
+                <a href="/orders">{{ tx.order_number }}</a>
+                {% else %}
+                -
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No transactions found matching your criteria.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<h1>Inventory Tracking System</h1>
+<div class="card">
+    <h2>Welcome</h2>
+    <p>This is your inventory management dashboard.</p>
+    <div class="mt-2">
+        <a href="/products" class="btn">Manage Products</a>
+        <a href="/orders" class="btn">View Orders</a>
+        <a href="/orders/new" class="btn">Create New Order</a>
+    </div>
+</div>
+{% endblock %}

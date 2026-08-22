@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Orders - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<div class="flex" style="justify-content: space-between; align-items: center;">
+    <h1>Orders</h1>
+    <a href="/orders/new" class="btn">Create New Order</a>
+</div>
+
+{% if orders %}
+<table>
+    <thead>
+        <tr>
+            <th>Order #</th>
+            <th>Customer</th>
+            <th>Company</th>
+            <th>Total</th>
+            <th>Receipt Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.order_number }}</td>
+            <td>{{ order.customer_name or 'Walk-in' }}</td>
+            <td>{{ order.company_name }}</td>
+            <td>₦{{ "%.2f"|format(order.total) }}</td>
+            <td>
+                {% if order.receipt_status == 'completed' %}
+                <span style="color: green;">✓ Completed</span>
+                {% elif order.receipt_status == 'pending' %}
+                <span style="color: orange;">⏳ Pending</span>
+                {% else %}
+                <span style="color: red;">✗ Failed</span>
+                {% endif %}
+            </td>
+            <td>{{ order.created_at[:10] }}</td>
+            <td>
+                <a href="/orders/{{ order.id }}">View</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No orders yet. <a href="/orders/new">Create your first order</a>.</p>
+</div>
+{% endif %}
+{% endblock %}

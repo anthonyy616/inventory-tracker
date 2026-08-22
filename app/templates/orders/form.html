@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}New Order - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<h1>Create New Order</h1>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<div class="card">
+    <form method="POST" action="/orders/new" id="orderForm">
+        <label for="company_name">Company Name *</label>
+        <input type="text" id="company_name" name="company_name"
+               value="{{ order.company_name if order else '' }}"
+               placeholder="e.g. Acme Corp" required>
+        <small>Type an existing company name to use it, or a new name to create it automatically.</small>
+
+        <label for="customer_name">Customer Name</label>
+        <input type="text" id="customer_name" name="customer_name" value="{{ order.customer_name if order else '' }}">
+
+        <label for="customer_email">Customer Email (for receipt)</label>
+        <input type="email" id="customer_email" name="customer_email" value="{{ order.customer_email if order else '' }}">
+
+        <h3 style="margin-top: 1.5rem;">Order Items</h3>
+        <div id="itemsContainer">
+            <div class="order-item" style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: end;">
+                <div style="flex: 2;">
+                    <label for="product_0">Product *</label>
+                    <select name="product_select" class="product-select" required onchange="updatePrice(this)">
+                        <option value="">Select a product</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}"
+                                data-price="{{ product.unit_price }}"
+                                data-stock="{{ product.quantity_in_stock }}"
+                                data-company-name="{{ product.company_name }}"
+                                data-name="{{ product.name }}">
+                            {{ product.name }} ({{ product.sku }}) - ₦{{ "%.2f"|format(product.unit_price) }} [Stock: {{ product.quantity_in_stock }}]
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label for="quantity_0">Quantity *</label>
+                    <input type="number" name="quantity" min="1" value="1" required onchange="updateLineTotal(this)">
+                </div>
+                <div style="flex: 1;">
+                    <label>Line Total</label>
+                    <input type="text" class="line-total" readonly value="₦0.00">
+                </div>
+                <button type="button" onclick="removeItem(this)" style="background-color: #e74c3c;">Remove</button>
+            </div>
+        </div>
+
+        <button type="button" onclick="addItem()" style="background-color: #27ae60; margin-bottom: 1rem;">Add Another Item</button>
+
+        <div style="border-top: 2px solid #eee; padding-top: 1rem; margin-top: 1rem;">
+            <p><strong>Subtotal: <span id="subtotal">₦0.00</span></strong></p>
+            <p><strong>Tax: ₦0.00</strong></p>
+            <p><strong>Total: <span id="total">₦0.00</span></strong></p>
+        </div>
+
+        <input type="hidden" id="itemsJson" name="items" value="">
+
+        <div class="mt-2">
+            <button type="submit">Place Order</button>
+            <a href="/orders" class="btn" style="background-color: #6c757d;">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // When the company name input changes, filter products to match
+    const companyNameInput = document.getElementById('company_name');
+    companyNameInput.addEventListener('input', filterProductsByCompanyName);
+
+    function filterProductsByCompanyName() {
+        const companyName = companyNameInput.value.trim().toLowerCase();
+        const selects = document.querySelectorAll('.product-select');
+
+        selects.forEach(select => {
+            const options = select.querySelectorAll('option[value]');
+            options.forEach(option => {
+                if (option.value === '') return;
+                const optionCompany = (option.getAttribute('data-company-name') || '').toLowerCase();
+                // Show all if input is empty, otherwise only matching companies
+                option.style.display = (!companyName || optionCompany === companyName) ? '' : 'none';
+            });
+            // Reset selection if the currently selected product is now hidden
+            if (select.value) {
+                const selectedOption = select.options[select.selectedIndex];
+                if (selectedOption.style.display === 'none') {
+                    select.value = '';
+                }
+            }
+        });
+        updateTotals();
+    }
+
+    function updatePrice(select) {
+        const container = select.closest('.order-item');
+        const quantityInput = container.querySelector('input[name="quantity"]');
+        updateLineTotal(quantityInput);
+    }
+
+    function updateLineTotal(input) {
+        const container = input.closest('.order-item');
+        const select = container.querySelector('.product-select');
+        const lineTotalInput = container.querySelector('.line-total');
+
+        if (select.value) {
+            const option = select.options[select.selectedIndex];
+            const price = parseFloat(option.getAttribute('data-price'));
+            const quantity = parseInt(input.value) || 0;
+            lineTotalInput.value = '₦' + (price * quantity).toFixed(2);
+        } else {
+            lineTotalInput.value = '₦0.00';
+        }
+
+        updateTotals();
+    }
+
+    function updateTotals() {
+        let subtotal = 0;
+        document.querySelectorAll('.line-total').forEach(input => {
+            subtotal += parseFloat(input.value.replace('₦', '')) || 0;
+        });
+
+        document.getElementById('subtotal').textContent = '₦' + subtotal.toFixed(2);
+        document.getElementById('total').textContent = '₦' + subtotal.toFixed(2);
+
+        const items = [];
+        document.querySelectorAll('.order-item').forEach(item => {
+            const select = item.querySelector('.product-select');
+            const quantityInput = item.querySelector('input[name="quantity"]');
+            if (select.value) {
+                items.push({
+                    product_id: select.value,
+                    quantity: parseInt(quantityInput.value) || 0
+                });
+            }
+        });
+
+        document.getElementById('itemsJson').value = JSON.stringify(items);
+    }
+
+    function addItem() {
+        const container = document.getElementById('itemsContainer');
+        const template = container.querySelector('.order-item').cloneNode(true);
+
+        template.querySelector('.product-select').name = 'product_select';
+        template.querySelector('.product-select').value = '';
+        template.querySelector('input[name="quantity"]').name = 'quantity';
+        template.querySelector('input[name="quantity"]').value = '1';
+        template.querySelector('.line-total').value = '₦0.00';
+
+        container.appendChild(template);
+    }
+
+    function removeItem(button) {
+        const container = document.getElementById('itemsContainer');
+        if (container.children.length > 1) {
+            button.closest('.order-item').remove();
+            updateTotals();
+        } else {
+            alert('You must have at least one item in the order.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTotals();
+    });
+</script>
+{% endblock %}

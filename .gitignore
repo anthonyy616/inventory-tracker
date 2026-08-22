@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+*.whl
+.eggs/
+
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Supabase
+supabase/.temp/
+
+# FastAPI
+*.pyc
+
+# PDF generation artifacts
+*.pdf
+
+# WeasyPrint
+weasyprint.log
+
+# QR code temp files
+*.png
+!app/static/*.png
+
+# Migration backups
+*.sql.bak
+
+#Agent files
+.agent/*
+
+#SQL Schema run
+migrations/001_create_inventory_tables.sql

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company.name }} - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<h1>{{ company.name }}</h1>
+
+<div class="card">
+    <h2>Company Details</h2>
+    <p><strong>Address:</strong> {{ company.address or 'Not specified' }}</p>
+    <p><strong>Contact:</strong> {{ company.contact_info or 'Not specified' }}</p>
+    {% if company.logo_url %}
+    <p><strong>Logo:</strong> <img src="{{ company.logo_url }}" alt="Company logo" style="max-width: 200px;"></p>
+    {% endif %}
+    <p><strong>Created:</strong> {{ company.created_at }}</p>
+    
+    <div class="mt-2">
+        <a href="/companies/{{ company.id }}/edit" class="btn">Edit Company</a>
+        <a href="/products/new?company_id={{ company.id }}" class="btn">Add Product</a>
+    </div>
+</div>
+{% endblock %}

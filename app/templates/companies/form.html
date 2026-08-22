@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Edit" if company else "New" }} Company - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<h1>{{ "Edit" if company else "New" }} Company</h1>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<div class="card">
+    <form method="POST" action="{{ '/companies/' ~ company.id ~ '/edit' if company else '/companies/new' }}">
+        <label for="name">Company Name *</label>
+        <input type="text" id="name" name="name" value="{{ company.name if company else '' }}" required>
+        
+        <label for="address">Address</label>
+        <textarea id="address" name="address" rows="3">{{ company.address if company else '' }}</textarea>
+        
+        <label for="contact_info">Contact Info</label>
+        <input type="text" id="contact_info" name="contact_info" value="{{ company.contact_info if company else '' }}">
+        
+        <label for="logo_url">Logo URL</label>
+        <input type="url" id="logo_url" name="logo_url" value="{{ company.logo_url if company else '' }}">
+        
+        <div class="mt-2">
+            <button type="submit">{{ "Update" if company else "Create" }} Company</button>
+            <a href="/companies" class="btn" style="background-color: #6c757d;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

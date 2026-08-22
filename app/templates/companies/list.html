@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Companies - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<div class="flex" style="justify-content: space-between; align-items: center;">
+    <h1>Companies</h1>
+    <a href="/companies/new" class="btn">Add Company</a>
+</div>
+
+{% if companies %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Contact</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for company in companies %}
+        <tr>
+            <td>{{ company.name }}</td>
+            <td>{{ company.address or '-' }}</td>
+            <td>{{ company.contact_info or '-' }}</td>
+            <td>{{ company.created_at[:10] }}</td>
+            <td>
+                <a href="/companies/{{ company.id }}">View</a>
+                <a href="/companies/{{ company.id }}/edit">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No companies yet. <a href="/companies/new">Add your first company</a>.</p>
+</div>
+{% endif %}
+{% endblock %}

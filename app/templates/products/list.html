@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Products - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<div class="flex" style="justify-content: space-between; align-items: center;">
+    <h1>Products</h1>
+    <a href="/products/new" class="btn">Add Product</a>
+</div>
+
+{% if products %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>SKU</th>
+            <th>Company</th>
+            <th>Unit Price</th>
+            <th>Stock</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.sku }}</td>
+            <td>{{ product.company_name }}</td>
+            <td>₦{{ "%.2f"|format(product.unit_price) }}</td>
+            <td>{{ product.quantity_in_stock }}</td>
+            <td>
+                {% if product.quantity_in_stock <= product.reorder_threshold %}
+                <span class="low-stock">Low Stock</span>
+                {% else %}
+                <span>In Stock</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="/products/{{ product.id }}">View</a>
+                <a href="/products/{{ product.id }}/edit">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No products yet. <a href="/products/new">Add your first product</a>.</p>
+</div>
+{% endif %}
+{% endblock %}

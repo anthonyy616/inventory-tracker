@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Edit" if product else "New" }} Product - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<h1>{{ "Edit" if product else "New" }} Product</h1>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<div class="card">
+    <form method="POST" action="{{ '/products/' ~ product.id ~ '/edit' if product else '/products/new' }}">
+        <label for="company_name">Company Name *</label>
+        <input type="text" id="company_name" name="company_name"
+               value="{{ product.company_name if product else '' }}"
+               placeholder="e.g. Acme Corp" required>
+        <small>Type an existing company name to use it, or a new name to create it automatically.</small>
+
+        <label for="sku">SKU *</label>
+        <input type="text" id="sku" name="sku" value="{{ product.sku if product else '' }}" required>
+
+        <label for="name">Product Name *</label>
+        <input type="text" id="name" name="name" value="{{ product.name if product else '' }}" required>
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3">{{ product.description if product else '' }}</textarea>
+
+        <label for="unit_price">Unit Price (₦) *</label>
+        <input type="number" id="unit_price" name="unit_price" step="0.01" min="0" value="{{ product.unit_price if product else '0.00' }}" required>
+
+        <label for="quantity_in_stock">Initial Stock *</label>
+        <input type="number" id="quantity_in_stock" name="quantity_in_stock" min="0" value="{{ product.quantity_in_stock if product else '0' }}" required>
+
+        <label for="reorder_threshold">Reorder Threshold</label>
+        <input type="number" id="reorder_threshold" name="reorder_threshold" min="0" value="{{ product.reorder_threshold if product else '0' }}">
+
+        <div class="mt-2">
+            <button type="submit">{{ "Update" if product else "Create" }} Product</button>
+            <a href="/products" class="btn" style="background-color: #6c757d;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

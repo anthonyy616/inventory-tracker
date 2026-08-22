@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Order {{ order.order_number }} - Inventory Tracking System{% endblock %}
+
+{% block content %}
+<h1>Order {{ order.order_number }}</h1>
+
+<div class="card">
+    <h2>Order Details</h2>
+    <p><strong>Customer:</strong> {{ order.customer_name or 'Walk-in' }}</p>
+    <p><strong>Company:</strong> {{ order.company_name }}</p>
+    <p><strong>Status:</strong> {{ order.status }}</p>
+    <p><strong>Date:</strong> {{ order.created_at }}</p>
+    
+    <h3 style="margin-top: 1.5rem;">Items</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Unit Price</th>
+                <th>Quantity</th>
+                <th>Line Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.product_name }}</td>
+                <td>₦{{ "%.2f"|format(item.unit_price_snapshot) }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>₦{{ "%.2f"|format(item.line_total) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div style="border-top: 2px solid #eee; padding-top: 1rem; margin-top: 1rem;">
+        <p><strong>Subtotal: ₦{{ "%.2f"|format(order.subtotal) }}</strong></p>
+        <p><strong>Tax: ₦{{ "%.2f"|format(order.tax) }}</strong></p>
+        <p><strong>Total: ₦{{ "%.2f"|format(order.total) }}</strong></p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Receipt Status</h2>
+    <p><strong>Status:</strong> 
+        {% if order.receipt_status == 'completed' %}
+        <span style="color: green;">✓ Completed</span>
+        {% elif order.receipt_status == 'pending' %}
+        <span style="color: orange;">⏳ Pending</span>
+        {% else %}
+        <span style="color: red;">✗ Failed</span>
+        {% endif %}
+    </p>
+    
+    {% if order.receipt_url %}
+    <p><a href="{{ order.receipt_url }}" target="_blank" class="btn">View Receipt</a></p>
+    {% endif %}
+    
+    {% if order.receipt_error %}
+    <p style="color: red;"><strong>Error:</strong> {{ order.receipt_error }}</p>
+    {% endif %}
+    
+    <p style="color: #666; font-size: 0.9rem;">Receipt will be generated and emailed once the Receipt Generation Service is connected.</p>
+</div>
+
+<div class="mt-2">
+    <a href="/orders" class="btn">Back to Orders</a>
+</div>
+{% endblock %}
