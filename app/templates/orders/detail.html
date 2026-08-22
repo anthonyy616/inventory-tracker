@@ -42,26 +42,40 @@
 </div>
 
 <div class="card">
-    <h2>Receipt Status</h2>
+    <h2>Receipt</h2>
     <p><strong>Status:</strong> 
         {% if order.receipt_status == 'completed' %}
-        <span style="color: green;">✓ Completed</span>
+        <span class="badge-success">✓ Generated</span>
         {% elif order.receipt_status == 'pending' %}
-        <span style="color: orange;">⏳ Pending</span>
+        <span class="badge-pending">⏳ Pending</span>
+        {% elif order.receipt_status == 'failed' %}
+        <span class="badge-failed">✗ Failed</span>
         {% else %}
-        <span style="color: red;">✗ Failed</span>
+        <span class="badge-pending">⏳ Not requested</span>
         {% endif %}
     </p>
     
-    {% if order.receipt_url %}
-    <p><a href="{{ order.receipt_url }}" target="_blank" class="btn">View Receipt</a></p>
-    {% endif %}
-    
     {% if order.receipt_error %}
-    <p style="color: red;"><strong>Error:</strong> {{ order.receipt_error }}</p>
+    <p style="color: #e74c3c; margin-top: 0.5rem;"><strong>Error:</strong> {{ order.receipt_error }}</p>
     {% endif %}
     
-    <p style="color: #666; font-size: 0.9rem;">Receipt will be generated and emailed once the Receipt Generation Service is connected.</p>
+    {% if order.receipt_status == 'completed' and order.receipt_url %}
+    <div class="receipt-actions">
+        <a href="/orders/{{ order.id }}/receipt/download" class="btn">⬇ Download Receipt</a>
+        <a href="/orders/{{ order.id }}/receipt/view" target="_blank" class="btn btn-secondary">View in Tab</a>
+    </div>
+    
+    <div class="receipt-embed">
+        <iframe src="/orders/{{ order.id }}/receipt/view" title="Receipt PDF"></iframe>
+    </div>
+    {% elif order.receipt_status == 'pending' %}
+    <p class="receipt-waiting">Receipt is being generated. This page will update automatically.</p>
+    <script>
+        setTimeout(() => location.reload(), 5000);
+    </script>
+    {% else %}
+    <p style="color: #999; margin-top: 0.5rem;">No receipt available yet.</p>
+    {% endif %}
 </div>
 
 <div class="mt-2">

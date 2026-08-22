@@ -63,3 +63,5 @@ weasyprint.log
 
 #SQL Schema run
 migrations/001_create_inventory_tables.sql
+
+bugs/
