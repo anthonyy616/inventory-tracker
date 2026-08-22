@@ -61,8 +61,7 @@ async def list_transactions(
         else:
             tx["order_number"] = "-"
     
-    return templates.TemplateResponse("transactions/list.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "transactions/list.html", {
         "transactions": transactions,
         "change_type": change_type,
         "start_date": start_date,

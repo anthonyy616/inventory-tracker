@@ -36,7 +36,7 @@ async def list_orders(request: Request):
     for order in orders:
         order["company_name"] = order["companies"]["name"] if order.get("companies") else "Unknown"
 
-    return templates.TemplateResponse("orders/list.html", {"request": request, "orders": orders})
+    return templates.TemplateResponse(request, "orders/list.html", {"orders": orders})
 
 
 @router.get("/new", response_class=HTMLResponse)
@@ -51,8 +51,7 @@ async def new_order_form(request: Request):
     for p in products:
         p["company_name"] = p["companies"]["name"] if p.get("companies") else ""
 
-    return templates.TemplateResponse("orders/form.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "orders/form.html", {
         "products": products,
         "order": None
     })
@@ -121,8 +120,7 @@ async def create_order(
         for p in products:
             p["company_name"] = p["companies"]["name"] if p.get("companies") else ""
 
-        return templates.TemplateResponse("orders/form.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "orders/form.html", {
             "products": products,
             "order": {"company_name": company_name, "customer_name": customer_name, "customer_email": customer_email},
             "error": str(e)
@@ -162,8 +160,7 @@ async def view_order(request: Request, order_id: str):
     for item in items:
         item["product_name"] = item["products"]["name"] if item.get("products") else item.get("product_name_snapshot", "Unknown")
 
-    return templates.TemplateResponse("orders/detail.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "orders/detail.html", {
         "order": order,
         "items": items
     })

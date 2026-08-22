@@ -34,13 +34,13 @@ async def list_products(request: Request):
     for product in products:
         product["company_name"] = product["companies"]["name"] if product.get("companies") else "Unknown"
 
-    return templates.TemplateResponse("products/list.html", {"request": request, "products": products})
+    return templates.TemplateResponse(request, "products/list.html", {"products": products})
 
 
 @router.get("/new", response_class=HTMLResponse)
 async def new_product_form(request: Request):
     """Show form to create a new product."""
-    return templates.TemplateResponse("products/form.html", {"request": request, "product": None})
+    return templates.TemplateResponse(request, "products/form.html", {"product": None})
 
 
 @router.post("/new")
@@ -74,8 +74,7 @@ async def create_product(
     if result.data:
         return RedirectResponse(url="/products", status_code=303)
 
-    return templates.TemplateResponse("products/form.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "products/form.html", {
         "product": {**product_data, "company_name": company_name},
         "error": "Failed to create product"
     })
@@ -95,8 +94,7 @@ async def view_product(request: Request, product_id: str):
 
     transactions = supabase.table("inventory_transactions").select("*").eq("product_id", product_id).order("created_at", desc=True).limit(10).execute()
 
-    return templates.TemplateResponse("products/detail.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "products/detail.html", {
         "product": product,
         "transactions": transactions.data
     })
@@ -114,8 +112,7 @@ async def edit_product_form(request: Request, product_id: str):
     product = product_result.data[0]
     product["company_name"] = product["companies"]["name"] if product.get("companies") else ""
 
-    return templates.TemplateResponse("products/form.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "products/form.html", {
         "product": product
     })
 
@@ -152,8 +149,7 @@ async def update_product(
     if result.data:
         return RedirectResponse(url=f"/products/{product_id}", status_code=303)
 
-    return templates.TemplateResponse("products/form.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "products/form.html", {
         "product": {**product_data, "id": product_id, "company_name": company_name},
         "error": "Failed to update product"
     })

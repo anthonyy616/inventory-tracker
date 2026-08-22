@@ -56,7 +56,7 @@ async def health_check():
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     """Root page - redirects to dashboard or products."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 if __name__ == "__main__":
