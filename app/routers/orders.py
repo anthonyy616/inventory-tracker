@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from supabase import Client
 import json
 import os
+import asyncio
 import httpx
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -128,17 +129,29 @@ async def create_order(
 
 
 async def send_to_receipt_service(receipt_service_url: str, webhook_secret: str, payload: dict):
-    """Background task: POST the outbox payload to the receipt service."""
-    try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.post(
-                f"{receipt_service_url}/webhooks/inventory-order",
-                json={"type": "INSERT", "table": "receipt_requests", "record": {"payload": payload}},
-                headers={"X-Inventory-Webhook-Secret": webhook_secret},
-            )
-            print(f"[receipt] Sent to receipt service: {resp.status_code} {resp.text}")
-    except Exception as e:
-        print(f"[receipt] Failed to notify receipt service: {e}")
+    """Background task: POST the outbox payload to the receipt service with retry."""
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post(
+                    f"{receipt_service_url}/webhooks/inventory-order",
+                    json={"type": "INSERT", "table": "receipt_requests", "record": {"payload": payload}},
+                    headers={"X-Inventory-Webhook-Secret": webhook_secret},
+                )
+                if resp.status_code < 500:
+                    print(f"[receipt] Sent to receipt service: {resp.status_code}")
+                    return
+                print(f"[receipt] Server error {resp.status_code}, attempt {attempt + 1}/{max_retries}")
+        except (httpx.TimeoutException, httpx.ConnectError, httpx.ReadError) as e:
+            print(f"[receipt] Connection error on attempt {attempt + 1}/{max_retries}: {e}")
+        except Exception as e:
+            print(f"[receipt] Unexpected error on attempt {attempt + 1}/{max_retries}: {e}")
+        if attempt < max_retries - 1:
+            wait = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
+            print(f"[receipt] Retrying in {wait}s...")
+            await asyncio.sleep(wait)
+    print(f"[receipt] Failed to notify receipt service after {max_retries} attempts")
 
 
 @router.get("/{order_id}", response_class=HTMLResponse)
@@ -164,6 +177,34 @@ async def view_order(request: Request, order_id: str):
         "order": order,
         "items": items
     })
+
+
+@router.post("/{order_id}/delete")
+async def delete_order(request: Request, order_id: str):
+    """Delete an order and restore stock levels."""
+    supabase = get_supabase(request)
+
+    # Verify order exists
+    order_result = supabase.table("orders").select("*").eq("id", order_id).execute()
+    if not order_result.data:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    order = order_result.data[0]
+
+    # Restore stock for each item
+    items_result = supabase.table("order_items").select("product_id, quantity").eq("order_id", order_id).execute()
+    for item in (items_result.data or []):
+        supabase.table("products").update(
+            {"quantity_in_stock": supabase.table("products").select("quantity_in_stock").eq("id", item["product_id"]).execute().data[0]["quantity_in_stock"] + item["quantity"]}
+        ).eq("id", item["product_id"]).execute()
+
+    # Delete related records
+    supabase.table("order_items").delete().eq("order_id", order_id).execute()
+    supabase.table("inventory_transactions").delete().eq("order_id", order_id).execute()
+    supabase.table("receipt_requests").delete().eq("order_id", order_id).execute()
+    supabase.table("orders").delete().eq("id", order_id).execute()
+
+    return RedirectResponse(url="/orders", status_code=303)
 
 
 @router.get("/{order_id}/receipt/view")
