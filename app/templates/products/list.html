@@ -3,19 +3,20 @@
 {% block title %}Products - Inventory Tracking System{% endblock %}
 
 {% block content %}
-<div class="flex" style="justify-content: space-between; align-items: center;">
+<div class="flex-between">
     <h1>Products</h1>
     <a href="/products/new" class="btn">Add Product</a>
 </div>
 
 {% if products %}
+<div class="table-wrapper">
 <table>
     <thead>
         <tr>
             <th>Name</th>
             <th>SKU</th>
             <th>Company</th>
-            <th>Unit Price</th>
+            <th>Price</th>
             <th>Stock</th>
             <th>Status</th>
             <th>Actions</th>
@@ -27,7 +28,7 @@
             <td>{{ product.name }}</td>
             <td>{{ product.sku }}</td>
             <td>{{ product.company_name }}</td>
-            <td>₦{{ "%.2f"|format(product.unit_price) }}</td>
+            <td>&#8358;{{ "%.2f"|format(product.unit_price) }}</td>
             <td>{{ product.quantity_in_stock }}</td>
             <td>
                 {% if product.quantity_in_stock <= product.reorder_threshold %}
@@ -44,6 +45,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% else %}
 <div class="card">
     <p>No products yet. <a href="/products/new">Add your first product</a>.</p>

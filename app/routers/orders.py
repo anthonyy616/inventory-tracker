@@ -212,22 +212,27 @@ async def view_receipt(request: Request, order_id: str):
     """Proxy the receipt PDF for inline display (avoids CORS issues with signed URLs)."""
     supabase = get_supabase(request)
 
-    order_result = supabase.table("orders").select("receipt_url, order_number").eq("id", order_id).execute()
+    order_result = supabase.table("orders").select("receipt_url, order_number, receipt_id").eq("id", order_id).execute()
     if not order_result.data or not order_result.data[0].get("receipt_url"):
         raise HTTPException(status_code=404, detail="Receipt not available")
 
     receipt_url = order_result.data[0]["receipt_url"]
+    order_number = order_result.data[0].get("order_number", order_id[:8])
 
     async with httpx.AsyncClient(follow_redirects=True, timeout=30) as client:
         resp = await client.get(receipt_url)
         if resp.status_code != 200:
             raise HTTPException(status_code=502, detail="Failed to fetch receipt")
 
+        content_type = resp.headers.get("content-type", "")
+        if "pdf" not in content_type and not resp.content[:5] == b"%PDF-":
+            raise HTTPException(status_code=502, detail="Receipt URL did not return a PDF")
+
     return StreamingResponse(
         iter([resp.content]),
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f"inline; filename=receipt-{order_result.data[0]['order_number']}.pdf",
+            "Content-Disposition": f"inline; filename=receipt-{order_number}.pdf",
             "Cache-Control": "public, max-age=3600",
         },
     )
@@ -238,17 +243,21 @@ async def download_receipt(request: Request, order_id: str):
     """Download the receipt PDF as a file attachment."""
     supabase = get_supabase(request)
 
-    order_result = supabase.table("orders").select("receipt_url, order_number").eq("id", order_id).execute()
+    order_result = supabase.table("orders").select("receipt_url, order_number, receipt_id").eq("id", order_id).execute()
     if not order_result.data or not order_result.data[0].get("receipt_url"):
         raise HTTPException(status_code=404, detail="Receipt not available")
 
     receipt_url = order_result.data[0]["receipt_url"]
-    order_number = order_result.data[0]["order_number"]
+    order_number = order_result.data[0].get("order_number", order_id[:8])
 
     async with httpx.AsyncClient(follow_redirects=True, timeout=30) as client:
         resp = await client.get(receipt_url)
         if resp.status_code != 200:
             raise HTTPException(status_code=502, detail="Failed to fetch receipt")
+
+        content_type = resp.headers.get("content-type", "")
+        if "pdf" not in content_type and not resp.content[:5] == b"%PDF-":
+            raise HTTPException(status_code=502, detail="Receipt URL did not return a PDF")
 
     return StreamingResponse(
         iter([resp.content]),

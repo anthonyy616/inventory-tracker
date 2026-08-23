@@ -25,7 +25,7 @@
 
         <h3 style="margin-top: 1.5rem;">Order Items</h3>
         <div id="itemsContainer">
-            <div class="order-item" style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: end;">
+            <div class="order-item" style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: end;" class="order-item-row">
                 <div style="flex: 2;">
                     <label for="product_0">Product *</label>
                     <select name="product_select" class="product-select" required onchange="updatePrice(this)">
@@ -36,42 +36,41 @@
                                 data-stock="{{ product.quantity_in_stock }}"
                                 data-company-name="{{ product.company_name }}"
                                 data-name="{{ product.name }}">
-                            {{ product.name }} ({{ product.sku }}) - ₦{{ "%.2f"|format(product.unit_price) }} [Stock: {{ product.quantity_in_stock }}]
+                            {{ product.name }} ({{ product.sku }}) - &#8358;{{ "%.2f"|format(product.unit_price) }} [Stock: {{ product.quantity_in_stock }}]
                         </option>
                         {% endfor %}
                     </select>
                 </div>
                 <div style="flex: 1;">
-                    <label for="quantity_0">Quantity *</label>
+                    <label for="quantity_0">Qty *</label>
                     <input type="number" name="quantity" min="1" value="1" required onchange="updateLineTotal(this)">
                 </div>
                 <div style="flex: 1;">
                     <label>Line Total</label>
-                    <input type="text" class="line-total" readonly value="₦0.00">
+                    <input type="text" class="line-total" readonly value="&#8358;0.00">
                 </div>
-                <button type="button" onclick="removeItem(this)" style="background-color: #e74c3c;">Remove</button>
+                <button type="button" onclick="removeItem(this)" class="btn-danger" style="min-height: 44px;">Remove</button>
             </div>
         </div>
 
-        <button type="button" onclick="addItem()" style="background-color: #27ae60; margin-bottom: 1rem;">Add Another Item</button>
+        <button type="button" onclick="addItem()" class="btn-success" style="margin-bottom: 1rem;">Add Another Item</button>
 
         <div style="border-top: 2px solid #eee; padding-top: 1rem; margin-top: 1rem;">
-            <p><strong>Subtotal: <span id="subtotal">₦0.00</span></strong></p>
-            <p><strong>Tax: ₦0.00</strong></p>
-            <p><strong>Total: <span id="total">₦0.00</span></strong></p>
+            <p><strong>Subtotal: <span id="subtotal">&#8358;0.00</span></strong></p>
+            <p><strong>Tax: &#8358;0.00</strong></p>
+            <p><strong>Total: <span id="total">&#8358;0.00</span></strong></p>
         </div>
 
         <input type="hidden" id="itemsJson" name="items" value="">
 
-        <div class="mt-2">
-            <button type="submit">Place Order</button>
-            <a href="/orders" class="btn" style="background-color: #6c757d;">Cancel</a>
+        <div class="mt-2" style="display: flex; gap: 0.75rem;">
+            <button type="submit" style="flex: 1;">Place Order</button>
+            <a href="/orders" class="btn btn-secondary" style="flex: 1; text-align: center;">Cancel</a>
         </div>
     </form>
 </div>
 
 <script>
-    // When the company name input changes, filter products to match
     const companyNameInput = document.getElementById('company_name');
     companyNameInput.addEventListener('input', filterProductsByCompanyName);
 
@@ -84,10 +83,8 @@
             options.forEach(option => {
                 if (option.value === '') return;
                 const optionCompany = (option.getAttribute('data-company-name') || '').toLowerCase();
-                // Show all if input is empty, otherwise only matching companies
                 option.style.display = (!companyName || optionCompany === companyName) ? '' : 'none';
             });
-            // Reset selection if the currently selected product is now hidden
             if (select.value) {
                 const selectedOption = select.options[select.selectedIndex];
                 if (selectedOption.style.display === 'none') {
@@ -113,9 +110,9 @@
             const option = select.options[select.selectedIndex];
             const price = parseFloat(option.getAttribute('data-price'));
             const quantity = parseInt(input.value) || 0;
-            lineTotalInput.value = '₦' + (price * quantity).toFixed(2);
+            lineTotalInput.value = '\u20A6' + (price * quantity).toFixed(2);
         } else {
-            lineTotalInput.value = '₦0.00';
+            lineTotalInput.value = '\u20A60.00';
         }
 
         updateTotals();
@@ -124,11 +121,11 @@
     function updateTotals() {
         let subtotal = 0;
         document.querySelectorAll('.line-total').forEach(input => {
-            subtotal += parseFloat(input.value.replace('₦', '')) || 0;
+            subtotal += parseFloat(input.value.replace('\u20A6', '')) || 0;
         });
 
-        document.getElementById('subtotal').textContent = '₦' + subtotal.toFixed(2);
-        document.getElementById('total').textContent = '₦' + subtotal.toFixed(2);
+        document.getElementById('subtotal').textContent = '\u20A6' + subtotal.toFixed(2);
+        document.getElementById('total').textContent = '\u20A6' + subtotal.toFixed(2);
 
         const items = [];
         document.querySelectorAll('.order-item').forEach(item => {
@@ -153,7 +150,7 @@
         template.querySelector('.product-select').value = '';
         template.querySelector('input[name="quantity"]').name = 'quantity';
         template.querySelector('input[name="quantity"]').value = '1';
-        template.querySelector('.line-total').value = '₦0.00';
+        template.querySelector('.line-total').value = '\u20A60.00';
 
         container.appendChild(template);
     }

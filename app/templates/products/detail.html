@@ -7,25 +7,26 @@
 
 <div class="card">
     <h2>Product Details</h2>
-    <p><strong>SKU:</strong> {{ product.sku }}</p>
-    <p><strong>Company:</strong> {{ product.company_name }}</p>
-    <p><strong>Unit Price:</strong> ₦{{ "%.2f"|format(product.unit_price) }}</p>
-    <p><strong>Current Stock:</strong> 
-        {% if product.quantity_in_stock <= product.reorder_threshold %}
-        <span class="low-stock">{{ product.quantity_in_stock }} (Low Stock)</span>
-        {% else %}
-        {{ product.quantity_in_stock }}
-        {% endif %}
-    </p>
-    <p><strong>Reorder Threshold:</strong> {{ product.reorder_threshold }}</p>
-    <p><strong>Description:</strong> {{ product.description or 'No description' }}</p>
-    <p><strong>Created:</strong> {{ product.created_at }}</p>
-    <p><strong>Last Updated:</strong> {{ product.updated_at }}</p>
-    
-    <div class="mt-2">
-        <a href="/products/{{ product.id }}/edit" class="btn">Edit Product</a>
-        <form method="POST" action="/products/{{ product.id }}/delete" style="display: inline;">
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this product?')">Delete Product</button>
+    <div class="order-info-grid">
+        <div><strong>SKU:</strong> {{ product.sku }}</div>
+        <div><strong>Company:</strong> {{ product.company_name }}</div>
+        <div><strong>Unit Price:</strong> &#8358;{{ "%.2f"|format(product.unit_price) }}</div>
+        <div><strong>Current Stock:</strong> 
+            {% if product.quantity_in_stock <= product.reorder_threshold %}
+            <span class="low-stock">{{ product.quantity_in_stock }} (Low Stock)</span>
+            {% else %}
+            {{ product.quantity_in_stock }}
+            {% endif %}
+        </div>
+        <div><strong>Reorder Threshold:</strong> {{ product.reorder_threshold }}</div>
+        <div><strong>Created:</strong> {{ product.created_at }}</div>
+    </div>
+    <p style="margin-top: 0.75rem;"><strong>Description:</strong> {{ product.description or 'No description' }}</p>
+
+    <div class="flex action-row" style="margin-top: 1rem;">
+        <a href="/products/{{ product.id }}/edit" class="btn" style="flex: 1; text-align: center;">Edit Product</a>
+        <form method="POST" action="/products/{{ product.id }}/delete" style="flex: 1; margin-bottom: 0;">
+            <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this product?')">Delete</button>
         </form>
     </div>
 </div>
@@ -38,11 +39,11 @@
             <option value="restock">Restock (Add Stock)</option>
             <option value="adjustment">Manual Adjustment</option>
         </select>
-        
+
         <label for="quantity_change">Quantity *</label>
         <input type="number" id="quantity_change" name="quantity_change" min="1" value="1" required>
         <small>For manual adjustment, use negative values to decrease stock.</small>
-        
+
         <div class="mt-2">
             <button type="submit">Apply Adjustment</button>
         </div>
@@ -51,14 +52,15 @@
 
 {% if transactions %}
 <div class="card">
-    <h2>Recent Stock Transactions</h2>
+    <h2>Recent Transactions</h2>
+    <div class="table-wrapper">
     <table>
         <thead>
             <tr>
                 <th>Date</th>
                 <th>Type</th>
                 <th>Change</th>
-                <th>Resulting Stock</th>
+                <th>Stock</th>
             </tr>
         </thead>
         <tbody>
@@ -72,6 +74,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 {% endif %}
 {% endblock %}

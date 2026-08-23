@@ -5,11 +5,11 @@
 {% block content %}
 <h1>Inventory Transactions</h1>
 
-<div class="card">
+<div class="card filter-form">
     <form method="GET" action="/transactions">
         <div class="flex">
             <div style="flex: 1;">
-                <label for="change_type">Transaction Type</label>
+                <label for="change_type">Type</label>
                 <select id="change_type" name="change_type">
                     <option value="">All Types</option>
                     <option value="sale" {{ "selected" if change_type == 'sale' }}>Sale</option>
@@ -18,11 +18,11 @@
                 </select>
             </div>
             <div style="flex: 1;">
-                <label for="start_date">Start Date</label>
+                <label for="start_date">From</label>
                 <input type="date" id="start_date" name="start_date" value="{{ start_date or '' }}">
             </div>
             <div style="flex: 1;">
-                <label for="end_date">End Date</label>
+                <label for="end_date">To</label>
                 <input type="date" id="end_date" name="end_date" value="{{ end_date or '' }}">
             </div>
             <div style="flex: 0; display: flex; align-items: end;">
@@ -33,6 +33,7 @@
 </div>
 
 {% if transactions %}
+<div class="table-wrapper">
 <table>
     <thead>
         <tr>
@@ -41,8 +42,8 @@
             <th>SKU</th>
             <th>Type</th>
             <th>Change</th>
-            <th>Resulting Stock</th>
-            <th>Order #</th>
+            <th>Stock</th>
+            <th>Order</th>
         </tr>
     </thead>
     <tbody>
@@ -57,7 +58,7 @@
                 {% elif tx.change_type == 'restock' %}
                 <span style="color: #27ae60;">Restock</span>
                 {% else %}
-                <span style="color: #f39c12;">Adjustment</span>
+                <span style="color: #f39c12;">Adjust</span>
                 {% endif %}
             </td>
             <td>
@@ -79,6 +80,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% else %}
 <div class="card">
     <p>No transactions found matching your criteria.</p>

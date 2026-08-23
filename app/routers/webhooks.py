@@ -59,6 +59,11 @@ async def receipt_callback(
     if callback.status == "failed" and callback.error:
         update_data["receipt_error"] = callback.error
     
+    # Store verification_url if present in callback
+    verification_url = getattr(callback, 'verification_url', None)
+    if verification_url:
+        update_data["verification_url"] = verification_url
+    
     # Perform the update
     result = supabase.table("orders").update(update_data).eq("id", callback.order_reference).execute()
     

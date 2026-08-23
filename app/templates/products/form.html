@@ -26,7 +26,7 @@
         <label for="description">Description</label>
         <textarea id="description" name="description" rows="3">{{ product.description if product else '' }}</textarea>
 
-        <label for="unit_price">Unit Price (₦) *</label>
+        <label for="unit_price">Unit Price (&#8358;) *</label>
         <input type="number" id="unit_price" name="unit_price" step="0.01" min="0" value="{{ product.unit_price if product else '0.00' }}" required>
 
         <label for="quantity_in_stock">Initial Stock *</label>
@@ -35,9 +35,9 @@
         <label for="reorder_threshold">Reorder Threshold</label>
         <input type="number" id="reorder_threshold" name="reorder_threshold" min="0" value="{{ product.reorder_threshold if product else '0' }}">
 
-        <div class="mt-2">
-            <button type="submit">{{ "Update" if product else "Create" }} Product</button>
-            <a href="/products" class="btn" style="background-color: #6c757d;">Cancel</a>
+        <div class="mt-2" style="display: flex; gap: 0.75rem;">
+            <button type="submit" style="flex: 1;">{{ "Update" if product else "Create" }} Product</button>
+            <a href="/products" class="btn btn-secondary" style="flex: 1; text-align: center;">Cancel</a>
         </div>
     </form>
 </div>

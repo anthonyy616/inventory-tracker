@@ -3,12 +3,13 @@
 {% block title %}Orders - Inventory Tracking System{% endblock %}
 
 {% block content %}
-<div class="flex" style="justify-content: space-between; align-items: center;">
+<div class="flex-between">
     <h1>Orders</h1>
     <a href="/orders/new" class="btn">Create New Order</a>
 </div>
 
 {% if orders %}
+<div class="table-wrapper">
 <table>
     <thead>
         <tr>
@@ -16,7 +17,7 @@
             <th>Customer</th>
             <th>Company</th>
             <th>Total</th>
-            <th>Receipt Status</th>
+            <th>Receipt</th>
             <th>Date</th>
             <th>Actions</th>
         </tr>
@@ -27,14 +28,16 @@
             <td>{{ order.order_number }}</td>
             <td>{{ order.customer_name or 'Walk-in' }}</td>
             <td>{{ order.company_name }}</td>
-            <td>₦{{ "%.2f"|format(order.total) }}</td>
+            <td>&#8358;{{ "%.2f"|format(order.total) }}</td>
             <td>
                 {% if order.receipt_status == 'completed' %}
-                <span style="color: green;">Completed</span>
+                <span class="badge-success">Done</span>
                 {% elif order.receipt_status == 'pending' %}
-                <span style="color: orange;">Pending</span>
+                <span class="badge-pending">Pending</span>
+                {% elif order.receipt_status == 'failed' %}
+                <span class="badge-failed">Failed</span>
                 {% else %}
-                <span style="color: red;">Failed</span>
+                <span class="badge-pending">N/A</span>
                 {% endif %}
             </td>
             <td>{{ order.created_at[:10] }}</td>
@@ -45,6 +48,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% else %}
 <div class="card">
     <p>No orders yet. <a href="/orders/new">Create your first order</a>.</p>
